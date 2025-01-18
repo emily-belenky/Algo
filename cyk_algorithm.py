@@ -1,71 +1,57 @@
-def parse_rules(rules):
+def is_word_in_language(rules, word):
     """
-    Parse the production rules into a dictionary for efficient lookup.
-    :param rules: List of production rules in Chomsky Normal Form.
-    :return: Dictionary mapping productions to variables.
+    Determines if a given word is part of the language defined by the CFG in Chomsky Normal Form.
+    
+    :param rules: A dictionary where keys are variables and values are lists of possible productions.
+    :param word: A string representing the input word.
+    :return: True if the word is in the language, False otherwise.
     """
-    productions = {}
-    for rule in rules:
-        left, right = rule.split("→")
-        right = right.strip().split("|")
-        for r in right:
-            if r not in productions:
-                productions[r] = []
-            productions[r].append(left.strip())
-    return productions
-
-def cyk_algorithm(rules, word):
-    """
-    Implements the CYK algorithm to determine if a word belongs to a language.
-    :param rules: List of production rules in Chomsky Normal Form.
-    :param word: Input word to check.
-    :return: True if the word belongs to the language, False otherwise.
-    """
-    productions = parse_rules(rules)
     n = len(word)
     if n == 0:
         return False
-
-    # Initialize DP table
+    
+    # Initialize the DP table
     dp = [[set() for _ in range(n)] for _ in range(n)]
+    
+    # Base case: Fill single-character productions
+    for i in range(n):
+        for variable, productions in rules.items():
+            if word[i] in productions:
+                dp[i][i].add(variable)
 
-    # Fill the diagonal of the DP table
-    for i, char in enumerate(word):
-        if char in productions:
-            dp[i][i].update(productions[char])
+    # Fill the table for substrings of length 2 to n
+    for length in range(2, n + 1):
+        for start in range(n - length + 1):
+            end = start + length - 1
+            for split in range(start, end):
+                for variable, productions in rules.items():
+                    for prod in productions:
+                        if len(prod) == 2:  # Binary production
+                            left, right = prod
+                            if left in dp[start][split] and right in dp[split + 1][end]:
+                                dp[start][end].add(variable)
 
-    # Fill the table for substrings of length > 1
-    for length in range(2, n + 1):  # Length of the substring
-        for i in range(n - length + 1):  # Start index of the substring
-            j = i + length - 1  # End index of the substring
-            for k in range(i, j):  # Split point
-                for B in dp[i][k]:
-                    for C in dp[k + 1][j]:
-                        if B + C in productions:
-                            dp[i][j].update(productions[B + C])
+    # Check if the start symbol 'S' generates the whole word
+    return 'S' in dp[0][n - 1]
 
-    # Check if the start symbol 'S' is in the top-right cell
-    return "S" in dp[0][n - 1]
 
-# Example usage
-if __name__ == "__main__":
-    # Define the rules in Chomsky Normal Form
-    rules = [
-        "S→AX|BY|SS|AB|BA",
-        "X→SB",
-        "Y→SA",
-        "A→a",
-        "B→b",
-    ]
+# Example grammar in Chomsky Normal Form
+grammar_rules = {
+    'S': ['AX', 'BY', 'SS', 'AB', 'BA'],
+    'X': ['SB'],
+    'Y': ['SA'],
+    'A': ['a'],
+    'B': ['b']
+}
 
-    # Test cases
-    test_words = [
-        "abba",  # Example given in the question
-        "abababababababababababababababab",  # Long word of length 30
-        "babababababababababababababababa",  # Long word of length 30
-        "aaabbbababababababababababababab",  # Long word of length 30
-    ]
+# Example inputs
+word1 = "abba"  # Should return True
+word2 = "abababababababababababababababab"  # Length 30, should return True
+word3 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"   # Length 30, should return False
+word4 = "bababababababababababababababab"  # Length 30, should return True
 
-    for word in test_words:
-        result = cyk_algorithm(rules, word)
-        print(f"Word: {word}, Result: {result}")
+# Running the algorithm
+print(is_word_in_language(grammar_rules, word1))  # True
+print(is_word_in_language(grammar_rules, word2))  # True
+print(is_word_in_language(grammar_rules, word3))  # False
+print(is_word_in_language(grammar_rules, word4))  # True
