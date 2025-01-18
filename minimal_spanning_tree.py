@@ -1,7 +1,6 @@
 import heapq
 from typing import List, Tuple, Dict, Set
 
-# Type definitions for better readability
 Node = int
 Edge = Tuple[Node, Node, float]
 Graph = Dict[Node, List[Tuple[Node, float]]]
@@ -114,28 +113,38 @@ def main():
             graph[v].append((u, weight))
 
     # Print the generated graph
-    print("Graph:")
+    print("Generated Graph (Adjacency List):")
     for node, neighbors in graph.items():
         print(f"{node}: {neighbors}")
 
-    # Find the Minimum Spanning Tree (MST)
+    # Find the MST using Prim's algorithm
     mst = prim(graph, start_node=0)
-    print("\nMinimum Spanning Tree:")
+    print("\nMinimum Spanning Tree (MST):")
     print(mst)
+
+    # Validate MST
+    assert len(mst) == num_nodes - 1, "MST should have n-1 edges."
+    print("MST validation passed: Correct number of edges.")
 
     # Add a new edge that does not affect the MST
-    new_edge = (0, 19, 15)  # A high-weight edge
-    print("\nNew Edge (no effect):", new_edge)
-    mst = update_mst(mst, new_edge)
-    print("Updated Minimum Spanning Tree:")
-    print(mst)
+    new_edge = (0, 19, 15)  # High-weight edge
+    print("\nAdding New Edge (No Effect):", new_edge)
+    updated_mst = update_mst(mst, new_edge)
+    assert mst == updated_mst, "MST should not change with a high-weight edge."
+    print("MST validation passed: No change for high-weight edge.")
 
     # Add a new edge that affects the MST
-    new_edge = (0, 19, 1)  # A low-weight edge
-    print("\nNew Edge (affects MST):", new_edge)
-    mst = update_mst(mst, new_edge)
-    print("Updated Minimum Spanning Tree:")
-    print(mst)
+    new_edge = (0, 19, 1)  # Low-weight edge
+    print("\nAdding New Edge (Affects MST):", new_edge)
+    print(f"Original MST weight: {sum(edge[2] for edge in mst)}")
+    updated_mst = update_mst(mst, new_edge)
+    print(f"Updated MST weight: {sum(edge[2] for edge in updated_mst)}")
+    print("Edge replaced in MST:", set(map(tuple, mst)) - set(map(tuple, updated_mst)))
+    print("Edge added to MST:", set(map(tuple, updated_mst)) - set(map(tuple, mst)))
+    assert len(updated_mst) == num_nodes - 1, "Updated MST should still have n-1 edges."
+    assert sum(edge[2] for edge in updated_mst) <= sum(edge[2] for edge in mst), \
+        "Updated MST should not have a higher total weight."
+    print("MST validation passed: Updated MST is correct.")
 
 if __name__ == "__main__":
     main()
