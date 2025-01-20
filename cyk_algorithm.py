@@ -1,3 +1,5 @@
+#Emily Belenky 314741877
+
 def is_word_in_language(rules, word):
     """
     Determines if a given word is part of the language defined by the CFG in Chomsky Normal Form.
