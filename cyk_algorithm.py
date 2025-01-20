@@ -1,5 +1,7 @@
 #Emily Belenky 314741877
 
+import sys
+
 def is_word_in_language(rules, word):
     """
     Determines if a given word is part of the language defined by the CFG in Chomsky Normal Form.
@@ -46,14 +48,14 @@ grammar_rules = {
     'B': ['b']
 }
 
-# Example inputs
-word1 = "abba"  # Should return True
-word2 = "abababababababababababababababab"  # Length 30, should return True
-word3 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"   # Length 30, should return False
-word4 = "bababababababababababababababab"  # Length 30, should return True
-
-# Running the algorithm
-print(is_word_in_language(grammar_rules, word1))  # True
-print(is_word_in_language(grammar_rules, word2))  # True
-print(is_word_in_language(grammar_rules, word3))  # False
-print(is_word_in_language(grammar_rules, word4))  # True
+if __name__ == "__main__":
+    # Check if words are provided as command-line arguments
+    if len(sys.argv) < 2:
+        print("Usage: python cyk_algorithm.py word1 word2 word3 ...")
+        sys.exit(1)
+    
+    # Iterate through each word provided in the command-line arguments
+    words = sys.argv[1:]
+    for word in words:
+        result = is_word_in_language(grammar_rules, word)
+        print(f"'{word}': {result}")
